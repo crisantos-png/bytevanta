@@ -49,7 +49,8 @@ const AdminDashboard = () => {
           category: article.categories,
           published_at: article.published_at,
           created_at: article.created_at,
-          status: article.published_at ? 'published' : 'draft'
+          // Explicitly cast the status to either 'published' or 'draft'
+          status: article.published_at ? ('published' as const) : ('draft' as const)
         }));
         
         setArticles(formattedArticles);
