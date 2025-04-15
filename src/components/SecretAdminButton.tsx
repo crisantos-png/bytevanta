@@ -7,12 +7,6 @@ import { Input } from "@/components/ui/input";
 import { toast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 
-// Define the interface for the response type
-interface AdminPassword {
-  password: string;
-  expires_at: string;
-}
-
 const SecretAdminButton = () => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [password, setPassword] = useState('');
@@ -28,42 +22,49 @@ const SecretAdminButton = () => {
     setIsLoading(true);
 
     try {
-      // Use the correct typing for RPC call
-      const { data, error } = await supabase
-        .rpc('get_current_admin_password') as { data: AdminPassword | null, error: Error | null };
+      // Direct authentication with admin credentials
+      // This allows us to bypass the RPC call that was causing TypeScript issues
+      if (password.length > 0) {
+        // First, get the admin password from the table directly
+        const { data, error } = await supabase
+          .from('admin_passwords')
+          .select('password, expires_at')
+          .eq('id', 1)
+          .single();
+          
+        if (error) throw error;
         
-      if (error) throw error;
-
-      // Check if password is valid and not expired
-      if (data && data.password === password) {
-        const expiryDate = new Date(data.expires_at);
-        if (expiryDate > new Date()) {
-          // Valid password, not expired
-          // Use the demo credentials to login
-          await supabase.auth.signInWithPassword({
-            email: 'admin@bytevanta.com', 
-            password: '@Anonymousfemboy€€€'
-          });
+        // Check if password is valid and not expired
+        if (data && data.password === password) {
+          const expiryDate = new Date(data.expires_at);
           
-          toast({
-            title: "Admin access granted",
-            description: "Redirecting to admin dashboard...",
-          });
-          
-          navigate('/admin/dashboard');
+          if (expiryDate > new Date()) {
+            // Valid password, not expired - sign in as admin
+            await supabase.auth.signInWithPassword({
+              email: 'admin@bytevanta.com', 
+              password: '@Anonymousfemboy€€€'
+            });
+            
+            toast({
+              title: "Admin access granted",
+              description: "Redirecting to admin dashboard...",
+            });
+            
+            navigate('/admin/dashboard');
+          } else {
+            toast({
+              title: "Password expired",
+              description: "This password has expired. Please check your email for a new one.",
+              variant: "destructive",
+            });
+          }
         } else {
           toast({
-            title: "Password expired",
-            description: "This password has expired. Please check your email for a new one.",
+            title: "Invalid password",
+            description: "The password you entered is incorrect.",
             variant: "destructive",
           });
         }
-      } else {
-        toast({
-          title: "Invalid password",
-          description: "The password you entered is incorrect.",
-          variant: "destructive",
-        });
       }
     } catch (error: any) {
       console.error("Error verifying admin password:", error);
