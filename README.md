@@ -1,54 +1,61 @@
 
 # Bytevanta Chronicle Hub
 
-A modern tech news and article publishing platform built with React.
+## Project Overview
+
+Bytevanta Chronicle Hub is a modern web application for publishing and managing tech news and articles.
 
 ## Technologies Used
 
-- React
+This project is built with:
+
+- HTML
+- CSS
+- JavaScript
 - TypeScript
+- React
 - Vite
-- Tailwind CSS
-- Supabase (Authentication & Database)
-- React Router
-- React Query
+- shadcn-ui (UI component library)
+- Tailwind CSS (utility-first CSS framework)
 
 ## Getting Started
 
-### Prerequisites
+Follow these steps to set up the project locally:
 
-- Node.js (v16+)
-- npm or yarn
+```sh
+# Step 1: Clone the repository
+git clone <YOUR_GIT_URL>
 
-### Installation
-
-1. Clone the repository
-```bash
-git clone https://github.com/yourusername/bytevanta-chronicle-hub.git
+# Step 2: Navigate to the project directory
 cd bytevanta-chronicle-hub
-```
 
-2. Install dependencies
-```bash
-npm install
-```
+# Step 3: Install the necessary dependencies
+npm i
 
-3. Start the development server
-```bash
+# Step 4: Start the development server
 npm run dev
 ```
 
-4. Open your browser at `http://localhost:8080`
-
 ## Features
 
-- Responsive design
-- User authentication
-- Article publishing system
-- Category management
-- Admin dashboard
-- Profile management
+- Modern, responsive article layout
+- Admin dashboard for content management
+- Category-based article organization
+- Featured articles section
+- Newsletter subscription
+- User authentication system
 
 ## Deployment
 
-The project is set up to automatically deploy to GitHub Pages when pushing to the main branch.
+To deploy this project:
+
+1. Build the production version: `npm run build`
+2. Deploy the `dist` folder to your preferred hosting service
+
+## Custom Domain Setup
+
+To connect your own domain to this project:
+
+1. Register your domain with a domain provider
+2. Configure DNS settings to point to your hosting service
+3. Update your hosting configuration to use your custom domain

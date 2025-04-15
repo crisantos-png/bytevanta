@@ -1,21 +1,31 @@
 
 import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { toast } from "@/components/ui/use-toast";
+import { ArrowLeft, Upload } from "lucide-react";
 import { useAuth } from '@/context/AuthContext';
 import { supabase } from "@/integrations/supabase/client";
-import { Button } from "@/components/ui/button";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { toast } from "@/components/ui/use-toast";
-import Layout from '../components/Layout';
+import Navbar from '../components/Navbar';
+import Footer from '../components/Footer';
 
-const Upload = () => {
+interface Category {
+  id: string;
+  name: string;
+  slug: string;
+}
+
+const UploadPage = () => {
   const navigate = useNavigate();
   const { id } = useParams<{ id?: string }>();
   const { user } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
-  const [categories, setCategories] = useState<any[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
   
   const [formData, setFormData] = useState({
     title: '',
@@ -86,6 +96,11 @@ const Upload = () => {
         });
       } catch (error) {
         console.error('Error fetching article:', error);
+        toast({
+          title: "Error",
+          description: "Failed to load article data",
+          variant: "destructive",
+        });
         navigate('/admin/dashboard');
       } finally {
         setIsLoading(false);
@@ -128,7 +143,8 @@ const Upload = () => {
     setIsLoading(true);
     
     try {
-      if (!formData.title || !formData.category_id || !formData.content) {
+      // Validate form
+      if (!formData.title || !formData.category_id || !formData.content || !formData.author_name) {
         toast({
           title: "Missing fields",
           description: "Please fill out all required fields.",
@@ -140,6 +156,7 @@ const Upload = () => {
       
       let image_url = formData.imagePreview;
       
+      // Upload image if exists
       if (formData.image) {
         const file = formData.image;
         const fileExt = file.name.split('.').pop();
@@ -154,6 +171,7 @@ const Upload = () => {
         image_url = data.publicUrl;
       }
       
+      // Prepare article data
       const articleData = {
         title: formData.title,
         category_id: formData.category_id,
@@ -164,19 +182,38 @@ const Upload = () => {
         published_at: new Date().toISOString(),
       };
       
+      // Insert or update article
       if (isEditMode) {
-        await supabase.from('articles').update(articleData).eq('id', id);
-        toast({ title: "Article updated" });
+        const { error } = await supabase
+          .from('articles')
+          .update(articleData)
+          .eq('id', id);
+          
+        if (error) throw error;
+        
+        toast({
+          title: "Article updated",
+          description: "Your article has been updated successfully.",
+        });
       } else {
-        await supabase.from('articles').insert([articleData]);
-        toast({ title: "Article published" });
+        const { error } = await supabase
+          .from('articles')
+          .insert([articleData]);
+          
+        if (error) throw error;
+        
+        toast({
+          title: "Article published",
+          description: "Your article has been published successfully.",
+        });
       }
       
       navigate('/admin/dashboard');
     } catch (error: any) {
+      console.error('Error publishing article:', error);
       toast({
         title: "Error",
-        description: error.message || "An error occurred",
+        description: error.message || "An error occurred while publishing your article.",
         variant: "destructive",
       });
     } finally {
@@ -185,113 +222,140 @@ const Upload = () => {
   };
 
   return (
-    <Layout>
-      <div className="container mx-auto p-6">
-        <Button 
-          variant="ghost" 
-          onClick={() => navigate('/admin/dashboard')} 
-          className="mb-6"
-        >
-          Back to Dashboard
-        </Button>
-        
-        <div className="bg-white p-6 rounded shadow">
-          <h1 className="text-2xl font-bold mb-6">
-            {isEditMode ? 'Edit Article' : 'Create New Article'}
-          </h1>
+    <div className="min-h-screen flex flex-col">
+      <Navbar />
+      
+      <main className="flex-grow bg-gray-50 py-8 px-4">
+        <div className="container mx-auto max-w-4xl">
+          <Button 
+            variant="ghost" 
+            onClick={() => navigate('/admin/dashboard')} 
+            className="mb-6"
+          >
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Back to Dashboard
+          </Button>
           
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-              <label className="block mb-1">Title</label>
-              <Input
-                name="title" 
-                value={formData.title}
-                onChange={handleInputChange}
-                required
-              />
-            </div>
+          <Card>
+            <CardHeader>
+              <CardTitle>{isEditMode ? 'Edit Article' : 'Create New Article'}</CardTitle>
+            </CardHeader>
             
-            <div>
-              <label className="block mb-1">Author</label>
-              <Input
-                name="author_name" 
-                value={formData.author_name}
-                onChange={handleInputChange}
-                required
-              />
-            </div>
-            
-            <div>
-              <label className="block mb-1">Category</label>
-              <Select 
-                value={formData.category_id}
-                onValueChange={handleCategoryChange}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select category" />
-                </SelectTrigger>
-                <SelectContent>
-                  {categories.map(category => (
-                    <SelectItem key={category.id} value={category.id}>
-                      {category.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            
-            <div>
-              <label className="block mb-1">Excerpt (optional)</label>
-              <Textarea
-                name="excerpt" 
-                value={formData.excerpt}
-                onChange={handleInputChange}
-                rows={3}
-              />
-            </div>
-            
-            <div>
-              <label className="block mb-1">Content</label>
-              <Textarea
-                name="content" 
-                value={formData.content}
-                onChange={handleInputChange}
-                rows={10}
-                required
-              />
-            </div>
-            
-            <div>
-              <label className="block mb-1">Featured Image</label>
-              <Input
-                type="file"
-                accept="image/*"
-                onChange={handleImageChange}
-              />
-              
-              {formData.imagePreview && (
-                <div className="mt-4">
-                  <img 
-                    src={formData.imagePreview} 
-                    alt="Preview" 
-                    className="h-40 object-cover"
-                  />
-                </div>
-              )}
-            </div>
-            
-            <Button 
-              type="submit" 
-              disabled={isLoading}
-              className="w-full"
-            >
-              {isLoading ? "Saving..." : isEditMode ? "Update Article" : "Publish Article"}
-            </Button>
-          </form>
+            {isLoading && !isEditMode ? (
+              <CardContent className="flex justify-center py-8">
+                <p>Loading...</p>
+              </CardContent>
+            ) : (
+              <CardContent>
+                <form onSubmit={handleSubmit} className="space-y-6">
+                  <div className="space-y-2">
+                    <Label htmlFor="title">Article Title *</Label>
+                    <Input 
+                      id="title" 
+                      name="title" 
+                      placeholder="Enter article title" 
+                      value={formData.title}
+                      onChange={handleInputChange}
+                      required
+                    />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="author_name">Author Name *</Label>
+                    <Input 
+                      id="author_name" 
+                      name="author_name" 
+                      placeholder="Enter author name" 
+                      value={formData.author_name}
+                      onChange={handleInputChange}
+                      required
+                    />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="category">Category *</Label>
+                    <Select 
+                      onValueChange={handleCategoryChange}
+                      value={formData.category_id}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select category" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {categories.map(category => (
+                          <SelectItem key={category.id} value={category.id}>
+                            {category.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="excerpt">Article Excerpt</Label>
+                    <Textarea 
+                      id="excerpt" 
+                      name="excerpt" 
+                      placeholder="Brief summary of the article (optional)"
+                      value={formData.excerpt}
+                      onChange={handleInputChange}
+                      rows={3}
+                    />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="content">Article Content *</Label>
+                    <Textarea 
+                      id="content" 
+                      name="content" 
+                      placeholder="Write your article content here..." 
+                      value={formData.content}
+                      onChange={handleInputChange}
+                      rows={10}
+                      required
+                    />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="image">Featured Image</Label>
+                    <Input 
+                      id="image" 
+                      type="file" 
+                      accept="image/*"
+                      onChange={handleImageChange} 
+                    />
+                    
+                    {formData.imagePreview && (
+                      <div className="mt-4 relative w-full h-48 rounded-md overflow-hidden">
+                        <img 
+                          src={formData.imagePreview} 
+                          alt="Preview" 
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                    )}
+                  </div>
+                  
+                  <CardFooter className="flex justify-end px-0 pb-0">
+                    <Button 
+                      type="submit" 
+                      className="bg-bytevanta-blue hover:bg-blue-600" 
+                      disabled={isLoading}
+                    >
+                      <Upload className="h-4 w-4 mr-2" />
+                      {isLoading ? "Publishing..." : isEditMode ? "Update Article" : "Publish Article"}
+                    </Button>
+                  </CardFooter>
+                </form>
+              </CardContent>
+            )}
+          </Card>
         </div>
-      </div>
-    </Layout>
+      </main>
+      
+      <Footer />
+    </div>
   );
 };
 
-export default Upload;
+export default UploadPage;

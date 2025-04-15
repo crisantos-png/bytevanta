@@ -1,17 +1,19 @@
 
-import React from 'react';
+import { ReactNode } from 'react';
 import Navbar from './Navbar';
 import Footer from './Footer';
 
-type LayoutProps = {
-  children: React.ReactNode;
-};
+interface LayoutProps {
+  children: ReactNode;
+}
 
-const Layout: React.FC<LayoutProps> = ({ children }) => {
+const Layout = ({ children }: LayoutProps) => {
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="flex flex-col min-h-screen">
       <Navbar />
-      <main className="flex-grow">{children}</main>
+      <main className="flex-grow">
+        {children}
+      </main>
       <Footer />
     </div>
   );
