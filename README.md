@@ -12,11 +12,8 @@ This project is built with:
 - HTML
 - CSS
 - JavaScript
-- TypeScript
 - React
-- Vite
-- shadcn-ui (UI component library)
-- Tailwind CSS (utility-first CSS framework)
+- Next.js
 
 ## Getting Started
 
@@ -59,3 +56,4 @@ To connect your own domain to this project:
 1. Register your domain with a domain provider
 2. Configure DNS settings to point to your hosting service
 3. Update your hosting configuration to use your custom domain
+```
