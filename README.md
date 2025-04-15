@@ -13,7 +13,10 @@ This project is built with:
 - CSS
 - JavaScript
 - React
-- Next.js
+- Vite
+- TypeScript
+- Tailwind CSS
+- shadcn/ui components
 
 ## Getting Started
 
@@ -49,6 +52,13 @@ To deploy this project:
 1. Build the production version: `npm run build`
 2. Deploy the `dist` folder to your preferred hosting service
 
+### GitHub Pages Deployment
+
+If deploying to GitHub Pages:
+
+1. In your repository settings, configure GitHub Pages to use the `gh-pages` branch
+2. Make sure your assets use relative paths to work correctly on GitHub Pages
+
 ## Custom Domain Setup
 
 To connect your own domain to this project:
@@ -56,4 +66,3 @@ To connect your own domain to this project:
 1. Register your domain with a domain provider
 2. Configure DNS settings to point to your hosting service
 3. Update your hosting configuration to use your custom domain
-```
