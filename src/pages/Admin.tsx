@@ -28,7 +28,7 @@ const Admin = () => {
     setIsLoading(true);
     
     // Check if using the special fixed password for demo
-    if (password === '@Anonymousfemboy€€€') {
+    if (password === '#@Ilovefemboys¥¥¥') {
       // Demo login with fixed credentials
       signIn('admin@bytevanta.com', password);
     } else {
@@ -92,7 +92,7 @@ const Admin = () => {
               </Button>
               
               <div className="text-center text-sm text-gray-500">
-                <p>Demo password: @Anonymousfemboy€€€</p>
+                <p>Demo password: #@Ilovefemboys¥¥¥</p>
               </div>
             </form>
           </CardContent>
