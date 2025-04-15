@@ -29,7 +29,7 @@ const SecretAdminButton = () => {
     try {
       // Using rpc instead of direct table query to work around type issues
       const { data, error } = await supabase
-        .rpc('get_current_admin_password')
+        .rpc<AdminPassword>('get_current_admin_password')
         .single();
         
       if (error) throw error;
