@@ -27,9 +27,9 @@ const SecretAdminButton = () => {
     setIsLoading(true);
 
     try {
-      // Using rpc with explicit type annotation to address the TypeScript error
+      // Using rpc with correct type parameters
       const { data, error } = await supabase
-        .rpc<AdminPassword>('get_current_admin_password');
+        .rpc<AdminPassword, {}>('get_current_admin_password');
         
       if (error) throw error;
 
