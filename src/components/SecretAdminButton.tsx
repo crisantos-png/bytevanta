@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { AdminPassword } from "@/types/admin";
 
 const SecretAdminButton = () => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -23,20 +24,19 @@ const SecretAdminButton = () => {
 
     try {
       // Direct authentication with admin credentials
-      // This allows us to bypass the RPC call that was causing TypeScript issues
       if (password.length > 0) {
-        // First, get the admin password from the table directly
+        // Use the RPC function instead of direct table access
         const { data, error } = await supabase
-          .from('admin_passwords')
-          .select('password, expires_at')
-          .eq('id', 1)
+          .rpc('get_current_admin_password')
           .single();
           
         if (error) throw error;
         
+        const adminPassword = data as unknown as AdminPassword;
+        
         // Check if password is valid and not expired
-        if (data && data.password === password) {
-          const expiryDate = new Date(data.expires_at);
+        if (adminPassword && adminPassword.password === password) {
+          const expiryDate = new Date(adminPassword.expires_at);
           
           if (expiryDate > new Date()) {
             // Valid password, not expired - sign in as admin
