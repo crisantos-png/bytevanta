@@ -3,3 +3,7 @@ project_id = "zcxuyobimcavlohotvxv"
 
 [functions.create_storage_bucket_if_not_exists]
 verify_jwt = false
+
+[functions.refresh_admin_password]
+verify_jwt = false
+schedule = "0 0 * * MON" # Run at midnight every Monday
