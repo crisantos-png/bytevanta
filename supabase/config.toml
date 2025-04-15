@@ -1,1 +1,5 @@
+
 project_id = "zcxuyobimcavlohotvxv"
+
+[functions.create_storage_bucket_if_not_exists]
+verify_jwt = false
