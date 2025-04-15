@@ -35,13 +35,6 @@ serve(async (req) => {
     const { authorization } = req.headers;
     const isScheduled = authorization === `Bearer ${Deno.env.get("CRON_SECRET")}`;
     
-    if (!isScheduled && req.method !== "POST") {
-      return new Response(
-        JSON.stringify({ error: "Unauthorized" }),
-        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
-    
     // Generate a new password
     const newPassword = generateSecurePassword();
     
@@ -79,7 +72,7 @@ serve(async (req) => {
     
     if (emailError) {
       console.error("Error sending email:", emailError);
-      // Continue execution even if email fails
+      throw new Error(`Failed to send email: ${emailError.message}`);
     }
     
     return new Response(

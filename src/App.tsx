@@ -16,6 +16,7 @@ import Upload from "./pages/Upload";
 import Article from "./pages/Article";
 import Category from "./pages/Category";
 import Profile from "./pages/Profile";
+import Privacy from "./pages/Privacy";
 
 const queryClient = new QueryClient();
 
@@ -36,6 +37,7 @@ const App = () => (
             <Route path="/admin/edit/:id" element={<Upload />} />
             <Route path="/article/:id" element={<Article />} />
             <Route path="/category/:slug" element={<Category />} />
+            <Route path="/privacy" element={<Privacy />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </AuthProvider>
