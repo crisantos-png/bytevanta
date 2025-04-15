@@ -7,6 +7,11 @@ import { Input } from "@/components/ui/input";
 import { toast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 
+interface AdminPassword {
+  password: string;
+  expires_at: string;
+}
+
 const SecretAdminButton = () => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [password, setPassword] = useState('');
@@ -22,11 +27,9 @@ const SecretAdminButton = () => {
     setIsLoading(true);
 
     try {
-      // Check password against the stored one
+      // Using rpc instead of direct table query to work around type issues
       const { data, error } = await supabase
-        .from('admin_passwords')
-        .select('password, expires_at')
-        .eq('id', 1)
+        .rpc('get_current_admin_password')
         .single();
         
       if (error) throw error;
