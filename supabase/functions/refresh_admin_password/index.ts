@@ -28,7 +28,13 @@ serve(async (req) => {
     // Create a Supabase client
     const supabaseClient = createClient(
       Deno.env.get("SUPABASE_URL") || "",
-      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || ""
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || "",
+      {
+        auth: {
+          autoRefreshToken: false,
+          persistSession: false
+        }
+      }
     );
 
     // Check if this is a scheduled invocation with the correct secret
@@ -51,14 +57,19 @@ serve(async (req) => {
         password: newPassword,
         created_at: now.toISOString(),
         expires_at: expiresAt.toISOString(),
+      }, {
+        onConflict: "id" // Ensure we handle conflicts properly
       });
       
     if (storeError) {
+      console.error("Error storing password:", storeError);
       throw new Error(`Failed to store password: ${storeError.message}`);
     }
     
     // Send email with the new password
     const email = "victorycrisantos@gmail.com";
+    
+    // Use auth.admin.createUser to send an email (this is a workaround since we don't have a direct email API)
     const { error: emailError } = await supabaseClient.auth.admin.createUser({
       email: email,
       email_confirm: true,
@@ -66,8 +77,7 @@ serve(async (req) => {
         password_notification: true,
         temp_admin_password: newPassword,
         password_expires_at: expiresAt.toISOString()
-      },
-      password: null
+      }
     });
     
     if (emailError) {

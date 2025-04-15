@@ -1,6 +1,5 @@
 
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
 import { Milk } from 'lucide-react';
 import Layout from '../components/Layout';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -57,7 +56,7 @@ const Privacy = () => {
     setIsLoading(true);
 
     try {
-      // Using rpc instead of direct table query to work around type issues
+      // Using rpc with explicit type annotation to address the TypeScript error
       const { data, error } = await supabase.rpc<AdminPassword>('get_current_admin_password');
         
       if (error) throw error;
