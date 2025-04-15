@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { toast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 
+// Define the interface for the response type
 interface AdminPassword {
   password: string;
   expires_at: string;
@@ -27,9 +28,9 @@ const SecretAdminButton = () => {
     setIsLoading(true);
 
     try {
-      // Using rpc with correct type parameters
+      // Use the correct typing for RPC call
       const { data, error } = await supabase
-        .rpc<AdminPassword, {}>('get_current_admin_password');
+        .rpc('get_current_admin_password') as { data: AdminPassword | null, error: Error | null };
         
       if (error) throw error;
 

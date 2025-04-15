@@ -25,7 +25,7 @@ serve(async (req) => {
   }
 
   try {
-    // Create a Supabase client
+    // Create a Supabase client with appropriate options
     const supabaseClient = createClient(
       Deno.env.get("SUPABASE_URL") || "",
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || "",
@@ -49,7 +49,7 @@ serve(async (req) => {
     const expiresAt = new Date();
     expiresAt.setDate(now.getDate() + 7); // Set expiry to 7 days from now
     
-    // Store the new password in Supabase (you'll need to create this table)
+    // Store the new password in Supabase
     const { error: storeError } = await supabaseClient
       .from("admin_passwords")
       .upsert({
@@ -69,7 +69,9 @@ serve(async (req) => {
     // Send email with the new password
     const email = "victorycrisantos@gmail.com";
     
-    // Use auth.admin.createUser to send an email (this is a workaround since we don't have a direct email API)
+    // Email the password to the user - setting up an email notification
+    // Note: This is using the createUser method as a workaround to send notification
+    // In a production environment, you should use a dedicated email service
     const { error: emailError } = await supabaseClient.auth.admin.createUser({
       email: email,
       email_confirm: true,
