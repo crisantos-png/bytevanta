@@ -5,8 +5,6 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "@/components/ui/use-toast";
-import { supabase } from "@/integrations/supabase/client";
-import { AdminPassword } from "@/types/admin";
 
 const SecretAdminButton = () => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -23,48 +21,20 @@ const SecretAdminButton = () => {
     setIsLoading(true);
 
     try {
-      // Direct authentication with admin credentials
-      if (password.length > 0) {
-        // Use the RPC function instead of direct table access
-        const { data, error } = await supabase
-          .rpc('get_current_admin_password')
-          .single();
-          
-        if (error) throw error;
-        
-        const adminPassword = data as unknown as AdminPassword;
-        
-        // Check if password is valid and not expired
-        if (adminPassword && adminPassword.password === password) {
-          const expiryDate = new Date(adminPassword.expires_at);
-          
-          if (expiryDate > new Date()) {
-            // Valid password, not expired - sign in as admin
-            await supabase.auth.signInWithPassword({
-              email: 'admin@bytevanta.com', 
-              password: '@Anonymousfemboy€€€'
-            });
+      // Simple fixed password authentication
+      if (password === '@Anonymousfemboy€€') {
+        toast({
+          title: "Admin access granted",
+          description: "Redirecting to admin dashboard...",
+        });
             
-            toast({
-              title: "Admin access granted",
-              description: "Redirecting to admin dashboard...",
-            });
-            
-            navigate('/admin/dashboard');
-          } else {
-            toast({
-              title: "Password expired",
-              description: "This password has expired. Please check your email for a new one.",
-              variant: "destructive",
-            });
-          }
-        } else {
-          toast({
-            title: "Invalid password",
-            description: "The password you entered is incorrect.",
-            variant: "destructive",
-          });
-        }
+        navigate('/admin/dashboard');
+      } else {
+        toast({
+          title: "Invalid password",
+          description: "The password you entered is incorrect.",
+          variant: "destructive",
+        });
       }
     } catch (error: any) {
       console.error("Error verifying admin password:", error);

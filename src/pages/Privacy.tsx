@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Milk } from 'lucide-react';
 import Layout from '../components/Layout';
@@ -6,45 +5,14 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "@/components/ui/use-toast";
-import { supabase } from "@/integrations/supabase/client";
-import { AdminPassword } from "@/types/admin";
 
 const Privacy = () => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [isRequestingPassword, setIsRequestingPassword] = useState(false);
-  const [passwordRequested, setPasswordRequested] = useState(false);
   
   const handleSecretClick = () => {
     setIsDialogOpen(true);
-  };
-  
-  const handleRequestPassword = async () => {
-    setIsRequestingPassword(true);
-    
-    try {
-      // Call the edge function to regenerate and email the password
-      const { error } = await supabase.functions.invoke('refresh_admin_password');
-      
-      if (error) throw error;
-      
-      toast({
-        title: "Password sent",
-        description: "Check your email for the admin password.",
-      });
-      
-      setPasswordRequested(true);
-    } catch (error: any) {
-      console.error("Error requesting admin password:", error);
-      toast({
-        title: "Error",
-        description: error.message || "Failed to request password.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsRequestingPassword(false);
-    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -52,47 +20,20 @@ const Privacy = () => {
     setIsLoading(true);
 
     try {
-      // Direct authentication with admin credentials
-      if (password.length > 0) {
-        // Use RPC function to get password
-        const { data, error } = await supabase
-          .rpc('get_current_admin_password')
-          .single();
-        
-        if (error) throw error;
-
-        const adminPassword = data as unknown as AdminPassword;
-        
-        // Check if password is valid and not expired
-        if (adminPassword && adminPassword.password === password) {
-          const expiryDate = new Date(adminPassword.expires_at);
-          if (expiryDate > new Date()) {
-            // Valid password, not expired
-            await supabase.auth.signInWithPassword({
-              email: 'admin@bytevanta.com', 
-              password: '@Anonymousfemboy€€€'
-            });
+      // Simple fixed password authentication
+      if (password === '@Anonymousfemboy€€') {
+        toast({
+          title: "Admin access granted",
+          description: "Redirecting to admin dashboard...",
+        });
             
-            toast({
-              title: "Admin access granted",
-              description: "Redirecting to admin dashboard...",
-            });
-            
-            window.location.href = '/admin/dashboard';
-          } else {
-            toast({
-              title: "Password expired",
-              description: "This password has expired. Please request a new one.",
-              variant: "destructive",
-            });
-          }
-        } else {
-          toast({
-            title: "Invalid password",
-            description: "The password you entered is incorrect.",
-            variant: "destructive",
-          });
-        }
+        window.location.href = '/admin/dashboard';
+      } else {
+        toast({
+          title: "Invalid password",
+          description: "The password you entered is incorrect.",
+          variant: "destructive",
+        });
       }
     } catch (error: any) {
       console.error("Error verifying admin password:", error);
@@ -179,43 +120,29 @@ const Privacy = () => {
           <DialogHeader>
             <DialogTitle>Admin Access</DialogTitle>
             <DialogDescription>
-              {passwordRequested 
-                ? "Enter the password sent to your email." 
-                : "Request a password to access the admin dashboard."}
+              Enter the admin password to access the dashboard.
             </DialogDescription>
           </DialogHeader>
           
-          {!passwordRequested ? (
-            <div className="py-4">
+          <form onSubmit={handleSubmit} className="space-y-4 py-4">
+            <Input
+              type="password"
+              placeholder="Enter admin password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+            />
+            
+            <DialogFooter>
               <Button 
-                onClick={handleRequestPassword} 
+                type="submit" 
                 className="w-full bg-bytevanta-blue hover:bg-blue-600"
-                disabled={isRequestingPassword}
+                disabled={isLoading}
               >
-                {isRequestingPassword ? "Sending..." : "Get Password"}
+                {isLoading ? "Verifying..." : "Access Admin"}
               </Button>
-            </div>
-          ) : (
-            <form onSubmit={handleSubmit} className="space-y-4 py-4">
-              <Input
-                type="password"
-                placeholder="Enter admin password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-              />
-              
-              <DialogFooter>
-                <Button 
-                  type="submit" 
-                  className="w-full bg-bytevanta-blue hover:bg-blue-600"
-                  disabled={isLoading}
-                >
-                  {isLoading ? "Verifying..." : "Access Admin"}
-                </Button>
-              </DialogFooter>
-            </form>
-          )}
+            </DialogFooter>
+          </form>
         </DialogContent>
       </Dialog>
     </Layout>
